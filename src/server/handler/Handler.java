@@ -1,5 +1,6 @@
 package server.handler;
 
+import client.Client;
 import http.Request;
 import http.Response;
 import http.StatusCodes;
@@ -15,26 +16,22 @@ import java.util.HashMap;
 public class Handler {
 	public static void handleRegister(Request request, DataOutputStream writer) throws IOException {
 		HashMap<String, String> form = request.getFormData();
-		if (User.isFormValid(form)) {
+		if (HandlerUtils.verifyRegisterForm(form) && request.getMethod().compareToIgnoreCase("POST") == 0) {
 			User user = User.fromForm(form);
 			System.out.println(user.toString());
 			DBController.addUser(user);
 
 			Response response = Response.generateResponse(StatusCodes.Created);
 			writer.writeBytes(response.toString());
-		} else {
-			Response response = Response.generateResponse(StatusCodes.BadRequest);
-			try {
-				writer.writeBytes(response.toString());
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			return;
 		}
-
+		Response resp = Response.generateResponse(StatusCodes.Unauthorized);
+		resp.setBody("Unauthorized");
+		writer.writeBytes(resp.toString());
 	}
 
-	public static void handleLogin(Request request, DataOutputStream writer) {
-		if (UserUtils.verifyLoginForm(request.getFormData())) {
+	public static void handleLogin(Request request, DataOutputStream writer) throws IOException {
+		if (HandlerUtils.verifyLoginForm(request.getFormData()) && request.getMethod().compareToIgnoreCase("POST") == 0) {
 			User user = DBController.getUser(request.getFormData().get("username"));
 			if (user != null) {
 				Response response = Response.generateResponse(StatusCodes.Accepted);
@@ -43,48 +40,29 @@ public class Handler {
 				response.setHeader("Set-Cookie", String.format("Auth=%s", token));
 				response.setBody(String.format("Auth=%s\r\n", token));
 				System.out.println(response.toString());
-				try {
-					writer.writeBytes(response.toString());
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+				writer.writeBytes(response.toString());
 				return;
 			}
 		}
 		Response resp = Response.generateResponse(StatusCodes.Unauthorized);
 		resp.setBody("Unauthorized");
-		try {
-			writer.writeBytes(resp.toString());
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
+		writer.writeBytes(resp.toString());
 	}
 
 	public static void handleApi(Request request, DataOutputStream writer) throws IOException {
-		String token = "";
-		if (request.containsHeader("Auth")) {
-			token = request.getHeader("Auth").getValue();
-		} else if (request.containsHeader("Cookie")) {
-			String[] cookie = request.getHeader("Cookie").getValue().split("=");
-			if (cookie.length == 2) {
-				token = cookie[1];
-			}
-		}
+		String token = HandlerUtils.getToken(request);
 
 		if (token.equals("")) {
-			System.out.println("HERE");
 			Response resp = Response.generateResponse(StatusCodes.Unauthorized);
 			resp.setBody("Unauthorized");
 			writer.writeBytes(resp.toString());
 			return;
 		}
 
-		// String user = request.getHeader("User").getValue();
-		String user = "taske";
+		String user = request.getHeader("User").getValue();
+		// String user = "taske";
 		System.out.println(token);
 		if (!UserUtils.validateToken(user, token)) {
-			System.out.println("HERE2");
 			Response resp = Response.generateResponse(StatusCodes.Unauthorized);
 			resp.setBody("Unauthorized");
 			writer.writeBytes(resp.toString());
@@ -118,6 +96,10 @@ public class Handler {
 		Response response = Response.generateResponse(StatusCodes.NotFound);
 		response.setBody("( ͡° ʖ̯ ͡°) 404 Not Found");
 		writer.writeBytes(response.toString());
+
+	}
+
+	public static void handleMessage(Request request, DataOutputStream writer) throws IOException {
 
 	}
 }

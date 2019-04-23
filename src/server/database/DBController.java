@@ -94,9 +94,9 @@ public class DBController {
 			sql.append(" WHERE ");
 			for (Map.Entry<String, String> kv : query.entrySet()) {
 				if (sql.length() > 26) {
-					sql.append(" AND ");
+					sql.append(" OR ");
 				}
-				sql.append(String.format("%s = '%s'", kv.getKey(), kv.getValue()));
+				sql.append(String.format("%s LIKE '%%%s%%'", kv.getKey(), kv.getValue()));
 			}
 		}
 

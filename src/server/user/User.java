@@ -20,7 +20,7 @@ public class User {
 	private String phone;
 	private String company;
 	private List<String> classes;
-	private static final String[] fieldList = {"username", "password", "firstName", "lastName", "email", "phone", "company"};
+	public  static final String[] fieldList = {"username", "password", "firstName", "lastName", "email", "phone", "company"};
 	private final static byte[] HASH_SALT = "1106e5f6ead07f89f65a4060724ed88d124f17b8".getBytes();
 
 	private List<Message> pendingMessages = new ArrayList<>();
@@ -78,15 +78,6 @@ public class User {
 			}
 		}
 		return user;
-	}
-
-	public static boolean isFormValid(HashMap<String, String> form) {
-		for (String f : User.fieldList) {
-			if (!form.containsKey(f)) {
-				return false;
-			}
-		}
-		return true;
 	}
 
 	public String getUsername() {

@@ -4,22 +4,10 @@ import server.database.DBController;
 import utils.Encryption;
 
 import java.time.Instant;
-import java.util.Arrays;
 import java.util.HashMap;
 
 public class UserUtils {
-	public static boolean verifyLoginForm(HashMap<String, String> form) {
-		if (form.containsKey("username") && form.containsKey("password")) {
-			User user = DBController.getUser(form.get("username"));
-			if (user != null) {
-				return user.checkPassword(form.get("password"));
-			} else {
-				return false;
-			}
-		} else {
-			return false;
-		}
-	}
+
 
 	public static String generateToken(User user) {
 		long unixTime = Instant.now().getEpochSecond();

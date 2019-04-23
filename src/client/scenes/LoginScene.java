@@ -1,134 +1,104 @@
 package client.scenes;
 
-import http.Request;
-import http.Response;
+
+import client.Client;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.SceneAntialiasing;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.*;
-import javafx.scene.paint.Paint;
+import javafx.scene.control.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.util.HashMap;
 
-public class LoginScene  extends Scene{
-	private BorderPane root;
+public class LoginScene extends Scene {
+	public VBox login;
+	public HBox serverPicker;
+	public FlowPane title;
+
+	public TextField tfUsername;
+	public PasswordField tfPassword;
+	public TextField tfAddress;
+	public TextField tfPort;
+
+	public Label lblTitle;
+	public Label lblUsername;
+	public Label lblPassword;
+	public Label lblAddress;
+	public Label lblPort;
+
+	public Button btnLogin;
+
 	public LoginScene(Parent root) {
 		super(root);
 	}
 
-	public LoginScene(BorderPane root, double width, double height) {
+	public LoginScene(Parent root, double width, double height) {
 		super(root, width, height);
 		// TITLE START
-		FlowPane title = new FlowPane();
+		this.title = new FlowPane();
 		title.setAlignment(Pos.CENTER);
 
-		Label lblTitle = new Label("Client App");
-		lblTitle.setFont(new Font(44));
+		this.lblTitle = new Label("Client App");
+		this.lblTitle.setFont(new Font(44));
 
 
-		title.getChildren().add(lblTitle);
+		this.title.getChildren().add(lblTitle);
 
 		// TITLE END
 
-		// LOGIN START
-		VBox login = new VBox();
-
-		login.setPadding(new Insets(100, 300, 50, 300));
-		login.setSpacing(10);
-
-		Label lblUsername = new Label("Username");
-		Label lblPassword = new Label("Password");
-
-		TextField tfUsername = new TextField();
-		PasswordField tfPassword = new PasswordField();
-
-		Button btnLogin = new Button("Login");
-
-		btnLogin.setOnMouseClicked(e -> {
-			String username = tfUsername.getText();
-			String password = tfPassword.getText();
-
-			HashMap<String, String> form = new HashMap<>();
-			form.put("username", username);
-			form.put("password", password);
-
-			Request loginRequest = Request.generateRequest();
-			loginRequest.setMethod("POST");
-			loginRequest.setPath("/login");
-			loginRequest.setFormData(form);
-			loginRequest.setHeader("User", username);
-			System.out.println(loginRequest.toString());
-			String hostname = "127.0.0.1";
-			int port = 8000;
-
-			InetAddress addr = null;
-			try {
-				addr = InetAddress.getByName(hostname);
-				Socket socket = new Socket(addr, port);
-				DataOutputStream writer = new DataOutputStream(socket.getOutputStream());
-				BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-				writer.writeBytes(loginRequest.toString());
-
-				Response response = Response.generateResponse(reader);
-				System.out.println(response.toString());
-
-			} catch (IOException ex) {
-				ex.printStackTrace();
-			}
-		});
-
-		login.getChildren().addAll(lblUsername, tfUsername, lblPassword, tfPassword, btnLogin);
-		//LOGIN END
-
 		//SERVER PICKER START
 
-		HBox serverPicker = new HBox();
+		this.serverPicker = new HBox();
 
-		serverPicker.setPadding(new Insets(5));
+		this.serverPicker.setPadding(new Insets(5));
 
-		Label lblAddress = new Label("IP Address: ");
-		Label lblPort = new Label("Port: ");
+		this.lblAddress = new Label("IP Address: ");
+		this.lblPort = new Label("Port: ");
 
-		TextField tfAddress = new TextField();
-		TextField tfPort = new TextField();
 
-		serverPicker.getChildren().addAll(lblAddress, tfAddress, lblPort, tfPort);
+		this.lblAddress.setPadding(new Insets(5));
+
+		this.lblPort.setPadding(new Insets(5));
+
+		this.tfAddress = new TextField();
+		this.tfPort = new TextField();
+
+		this.tfAddress.setMaxWidth(100);
+		this.tfAddress.setMinWidth(100);
+
+		this.tfPort.setMaxWidth(100);
+		this.tfPort.setMinWidth(100);
+		this.tfAddress.setText("127.0.0.1");
+		this.tfPort.setText("8000");
+
+		this.serverPicker.getChildren().addAll(lblAddress, tfAddress, lblPort, tfPort);
 
 		//SERVER PICKER END
 
-		this.root.setTop(title);
-		this.root.setCenter(login);
-		this.root.setBottom(serverPicker);
+		// LOGIN START
+		this.login = new VBox();
+
+		this.login.setPadding(new Insets(100, 300, 50, 300));
+		this.login.setSpacing(10);
+
+		this.lblUsername = new Label("Username");
+		this.lblPassword = new Label("Password");
+
+		this.tfUsername = new TextField();
+		this.tfPassword = new PasswordField();
+
+		this.btnLogin = new Button("Login");
+		this.login.getChildren().addAll(this.lblUsername, this.tfUsername, this.lblPassword, this.tfPassword, this.btnLogin);
+		//LOGIN END
+
+
+		((BorderPane) this.getRoot()).setTop(title);
+		((BorderPane) this.getRoot()).setCenter(login);
+		((BorderPane) this.getRoot()).setBottom(serverPicker);
+
 	}
-
-	public LoginScene(Parent root, Paint fill) {
-		super(root, fill);
-	}
-
-	public LoginScene(Parent root, double width, double height, Paint fill) {
-		super(root, width, height, fill);
-	}
-
-	public LoginScene(Parent root, double width, double height, boolean depthBuffer) {
-		super(root, width, height, depthBuffer);
-	}
-
-	public LoginScene(Parent root, double width, double height, boolean depthBuffer, SceneAntialiasing antiAliasing) {
-		super(root, width, height, depthBuffer, antiAliasing);
-	}
-
-
 }

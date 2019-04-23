@@ -4,6 +4,7 @@ import http.StatusCodes;
 import http.Request;
 import http.Response;
 import server.handler.Handler;
+import server.user.User;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -77,6 +78,7 @@ class HandlerThread implements Runnable {
 				Handler.handleLogin(request, writer);
 			} else if (request.getPath().startsWith("/api")) {
 				Handler.handleApi(request, writer);
+			} else if (request.getPath().equals("/message")){
 			} else {
 				Response response = Response.generateResponse(StatusCodes.NotFound);
 				response.setBody("( ͡° ʖ̯ ͡°) 404 Not Found");

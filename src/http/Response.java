@@ -58,9 +58,7 @@ public class Response {
 				if (parts.length == 2) {
 					response.headers.put(parts[0].toLowerCase(), parts[1]);
 				} else {
-					System.out.println(line);
 					String[] requestLine = line.split(" ", 3);
-					System.out.println(requestLine.length);
 					if (requestLine.length == 3) {
 						response.version = requestLine[0];
 						response.setStatusCode(Integer.parseInt(requestLine[1]));
