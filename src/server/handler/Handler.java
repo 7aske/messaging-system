@@ -1,6 +1,5 @@
 package server.handler;
 
-import client.Client;
 import http.Request;
 import http.Response;
 import http.StatusCodes;
@@ -18,12 +17,22 @@ public class Handler {
 		HashMap<String, String> form = request.getFormData();
 		if (HandlerUtils.verifyRegisterForm(form) && request.getMethod().compareToIgnoreCase("POST") == 0) {
 			User user = User.fromForm(form);
-			System.out.println(user.toString());
-			DBController.addUser(user);
+			if (User.isValid(user)){
+				System.out.println(user.toString());
+				DBController.addUser(user);
 
-			Response response = Response.generateResponse(StatusCodes.Created);
-			writer.writeBytes(response.toString());
-			return;
+				Response response = Response.generateResponse(StatusCodes.Created);
+				String token = UserUtils.generateToken(user);
+				response.setHeader("Token", token);
+				response.setHeader("Set-Cookie", String.format("Auth=%s", token));
+				writer.writeBytes(response.toString());
+				return;
+			} else {
+				Response resp = Response.generateResponse(StatusCodes.BadRequest);
+				resp.setBody("Invalid form");
+				writer.writeBytes(resp.toString());
+				return;
+			}
 		}
 		Response resp = Response.generateResponse(StatusCodes.Unauthorized);
 		resp.setBody("Unauthorized");
@@ -60,7 +69,7 @@ public class Handler {
 		}
 
 		String user = request.getHeader("User").getValue();
-		// String user = "taske";
+
 		System.out.println(token);
 		if (!UserUtils.validateToken(user, token)) {
 			Response resp = Response.generateResponse(StatusCodes.Unauthorized);
@@ -69,7 +78,7 @@ public class Handler {
 			return;
 		}
 
-		if (request.getPath().startsWith("/api/get?")) {
+		if (request.getPath().startsWith("/api/users?")) {
 			String[] requestParams = request.getPath().split("\\?");
 			HashMap<String, String> sqlParams = new HashMap<>();
 			if (requestParams.length == 2) {
@@ -89,17 +98,19 @@ public class Handler {
 				responseBody.append(u.asResponseString());
 			}
 			Response response = Response.generateResponse(StatusCodes.OK);
+			response.setHeader("Content-Type", "application/x-www-form-urlencoded");
 			response.setBody(responseBody.toString());
 			writer.writeBytes(response.toString());
 			return;
+		} else if (request.getPath().startsWith("/api/messages?")) {
+
 		}
 		Response response = Response.generateResponse(StatusCodes.NotFound);
 		response.setBody("( ͡° ʖ̯ ͡°) 404 Not Found");
 		writer.writeBytes(response.toString());
 
 	}
-
-	public static void handleMessage(Request request, DataOutputStream writer) throws IOException {
+	public static void handleMessage(Request request, DataOutputStream writer) {
 
 	}
 }

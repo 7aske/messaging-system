@@ -1,47 +1,55 @@
 package client.scenes;
 
-import client.Client;
-import client.components.UsersSidebar;
-import javafx.collections.FXCollections;
+import client.components.ComposeComponent;
+import client.components.MessagesComponent;
+import client.components.Sidebar;
+import client.components.TopControls;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.FlowPane;
-
-import java.io.IOException;
+import javafx.scene.layout.*;
 
 
 public class HomeScene extends Scene {
-	public FlowPane left;
-
-	public TextField search;
-	public UsersSidebar usersSidebar;
+	public TopControls top;
+	public Sidebar left;
+	public ComposeComponent compose;
+	public MessagesComponent messages;
 
 	public HomeScene(Parent root, double width, double height) {
 		super(root, width, height);
+		// SIDEBAR START
+		this.left = new Sidebar();
 
-		this.left = new FlowPane();
+		//SIDEBAR END
 
-		this.search = new TextField();
-		this.search.setPromptText("Search");
-		this.search.setMinWidth(250);
-		this.search.setMinHeight(30);
-		this.usersSidebar = new UsersSidebar(FXCollections.observableArrayList(Client.state.getContacts()));
-		this.usersSidebar.setMinHeight(Client.state.getHeight()- 30);
-		this.search.setOnKeyReleased(e -> {
-			try {
-				this.usersSidebar.updateSidebar(this.search.getText());
-			} catch (IOException ex) {
-				ex.printStackTrace();
-			}
+		//COMPOSE START
+		this.compose = new ComposeComponent();
+
+		//COMPOSE END
+
+		//MESSAGES START
+		this.messages = new MessagesComponent();
+
+		//MESSAGES END
+
+		// TOP START
+		this.top = new TopControls();
+		this.top.btnCompose.setOnMouseClicked(e -> {
+			((BorderPane) this.getRoot()).setCenter(this.compose);
 		});
+		this.top.btnMessages.setOnMouseClicked(e -> {
+			((BorderPane) this.getRoot()).setCenter(this.messages);
+		});
+		this.top.btnRefresh.setOnMouseClicked(e -> {
+			this.left.search.setText("");
+			this.left.updateSidebar(null);
+		});
+		// TOP END
 
-		this.left.getChildren().addAll(search, usersSidebar);
-
-
-		((BorderPane)this.getRoot()).setLeft(left);
-
-		this.usersSidebar.requestFocus();
+		((BorderPane) this.getRoot()).setLeft(this.left);
+		((BorderPane) this.getRoot()).setCenter(this.compose);
+		((BorderPane) this.getRoot()).setTop(this.top);
+		this.compose.tfTo.requestFocus();
 	}
 }
+

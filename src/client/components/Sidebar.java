@@ -9,13 +9,51 @@ import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.FlowPane;
 import server.user.User;
 import server.user.UserUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
-public class UsersSidebar extends ListView {
+
+public class Sidebar extends FlowPane {
+	public UsersSidebar usersSidebar;
+	public TextField search;
+
+	public Sidebar() {
+		this.usersSidebar = new UsersSidebar(FXCollections.observableArrayList(Client.state.getContacts()));
+		this.usersSidebar.setMinHeight(Client.state.getHeight() - 30);
+
+
+		this.search = new TextField();
+		this.search.setPromptText("Search");
+		this.search.setMinWidth(250);
+		this.search.setMinHeight(30);
+		this.search.setOnKeyReleased(e -> {
+			try {
+				this.usersSidebar.updateSidebar(this.search.getText());
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+		});
+		this.setMinWidth(250);
+		this.setMaxWidth(250);
+
+
+		this.getChildren().addAll(search, usersSidebar);
+	}
+	public void updateSidebar(String query){
+		try {
+			this.usersSidebar.updateSidebar(query);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+}
+
+class UsersSidebar extends ListView {
 	public UsersSidebar() {
 	}
 
@@ -47,10 +85,10 @@ public class UsersSidebar extends ListView {
 		}
 		Request request = Request.generateRequest();
 		System.out.println(queryString);
-		request.setPath("/api/get?" + queryString);
+		request.setPath("/api/users?" + queryString);
 		request.setMethod("GET");
 		request.setHeader("User", Client.state.getUsername());
-		request.setHeader("Auth", Client.state.getToken());
+		request.setHeader("Token", Client.state.getToken());
 		Response resp = request.send(Client.state.getServer(), Client.state.getPort());
 		System.out.println(resp.toString());
 		if (resp.getStatusCode() == 200) {

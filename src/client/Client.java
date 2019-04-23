@@ -2,12 +2,12 @@ package client;
 
 import client.scenes.HomeScene;
 import client.scenes.LoginScene;
+import client.scenes.RegisterScene;
 import client.state.State;
 import http.Request;
 import http.Response;
 import javafx.application.Application;
 import javafx.event.Event;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseButton;
@@ -64,12 +64,13 @@ public class Client extends Application {
 					showMessage("Invalid credentials", "Invalid credentials", "Invalid username or password", Alert.AlertType.ERROR);
 				}
 			} catch (IOException ex) {
-				ex.printStackTrace();
+				if (ex.getLocalizedMessage().equals("Connection refused (Connection refused)")) {
+					Client.showMessage("Error", "Connection error", "Unable to connect to the server", Alert.AlertType.ERROR);
+				} else {
+					ex.printStackTrace();
+				}
 			}
-
-
 		});
-
 		scene.tfPassword.setOnKeyPressed(e -> {
 			if (e.getCode() == KeyCode.ENTER) {
 				Event.fireEvent(scene.btnLogin, new MouseEvent(MouseEvent.MOUSE_CLICKED, 0,
@@ -86,7 +87,9 @@ public class Client extends Application {
 
 			}
 		});
-
+		scene.btnRegister.setOnMouseClicked(e -> {
+			renderRegister(stage);
+		});
 		stage.setScene(scene);
 	}
 
@@ -94,6 +97,37 @@ public class Client extends Application {
 		HomeScene scene = new HomeScene(new BorderPane(), Client.state.getWidth(), Client.state.getHeight());
 
 		stage.setScene(scene);
+	}
+
+	public void renderRegister(Stage stage) {
+		RegisterScene regScene = new RegisterScene(new BorderPane(), Client.state.getWidth(), Client.state.getHeight());
+
+		regScene.btnRegister.setOnMouseClicked(e -> {
+			if (regScene.verifyForm()) {
+				String body = regScene.getFormData();
+
+				Request request = Request.generateRequest("POST", "/register");
+				request.setHeader("Content-Type", "application/x-www-form-urlencoded");
+				request.setBody(body);
+				try {
+					Response resp = request.send(regScene.tfAddress.getText(), Integer.parseInt(regScene.tfPort.getText()));
+					System.out.println(resp.toString());
+				} catch (IOException ex) {
+					ex.printStackTrace();
+				}
+
+			} else {
+				Client.showMessage("Error", "Invalid registration form", "Check your input", Alert.AlertType.ERROR);
+			}
+		});
+
+		regScene.btnBack.setOnMouseClicked(e -> {
+			renderLogin(stage);
+		});
+
+		stage.setScene(regScene);
+
+
 	}
 
 	public static void showMessage(String title, String header, String text, Alert.AlertType type) {

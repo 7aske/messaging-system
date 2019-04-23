@@ -1,7 +1,7 @@
 package client.scenes;
 
 
-import client.Client;
+import com.sun.org.apache.bcel.internal.generic.LADD;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -17,7 +17,7 @@ import javafx.scene.text.Font;
 public class LoginScene extends Scene {
 	public VBox login;
 	public HBox serverPicker;
-	public FlowPane title;
+	public FlowPane top;
 
 	public TextField tfUsername;
 	public PasswordField tfPassword;
@@ -31,6 +31,8 @@ public class LoginScene extends Scene {
 	public Label lblPort;
 
 	public Button btnLogin;
+	public Label lblRegister;
+	public Button btnRegister;
 
 	public LoginScene(Parent root) {
 		super(root);
@@ -39,14 +41,14 @@ public class LoginScene extends Scene {
 	public LoginScene(Parent root, double width, double height) {
 		super(root, width, height);
 		// TITLE START
-		this.title = new FlowPane();
-		title.setAlignment(Pos.CENTER);
+		this.top = new FlowPane();
+		this.top.setAlignment(Pos.CENTER);
 
-		this.lblTitle = new Label("Client App");
+		this.lblTitle = new Label("Client Login");
 		this.lblTitle.setFont(new Font(44));
 
 
-		this.title.getChildren().add(lblTitle);
+		this.top.getChildren().add(lblTitle);
 
 		// TITLE END
 
@@ -91,12 +93,16 @@ public class LoginScene extends Scene {
 		this.tfUsername = new TextField();
 		this.tfPassword = new PasswordField();
 
+
 		this.btnLogin = new Button("Login");
-		this.login.getChildren().addAll(this.lblUsername, this.tfUsername, this.lblPassword, this.tfPassword, this.btnLogin);
+		this.lblRegister = new Label("Not a member?");
+		this.btnRegister = new Button("Register");
+
+		this.login.getChildren().addAll(this.lblUsername, this.tfUsername, this.lblPassword, this.tfPassword, this.btnLogin, this.lblRegister, this.btnRegister);
 		//LOGIN END
 
 
-		((BorderPane) this.getRoot()).setTop(title);
+		((BorderPane) this.getRoot()).setTop(top);
 		((BorderPane) this.getRoot()).setCenter(login);
 		((BorderPane) this.getRoot()).setBottom(serverPicker);
 

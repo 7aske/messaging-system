@@ -1,5 +1,6 @@
 package client.state;
 
+import server.message.Message;
 import server.user.User;
 
 import java.util.ArrayList;
@@ -10,11 +11,13 @@ public class State {
 	private int height = 600;
 	private int width = 800;
 	private ArrayList<User> contacts;
+	private ArrayList<Message> messages;
 	private String server;
 	private int port;
 
 	public State() {
 		this.contacts = new ArrayList<>();
+		this.messages = new ArrayList<>();
 	}
 
 	public int getHeight() {
@@ -73,6 +76,14 @@ public class State {
 		this.token = token;
 	}
 
+	public ArrayList<Message> getMessages() {
+		return messages;
+	}
+
+	public void setMessages(ArrayList<Message> messages) {
+		this.messages = messages;
+	}
+
 	@Override
 	public String toString() {
 		return "State{" +
@@ -82,8 +93,10 @@ public class State {
 				", \nwidth=" + width +
 				", \nserver='" + server + '\'' +
 				", \nport=" + port +
+				", \nmessages=" + messages +
+				", \nmessages-size='" + messages.size() + '\'' +
 				", \ncontacts=" + contacts +
-				", \ncontacts.size()='" + contacts.size() + '\'' +
+				", \ncontacts-size='" + contacts.size() + '\'' +
 				'}';
 	}
 }

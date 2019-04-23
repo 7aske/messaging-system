@@ -54,7 +54,7 @@ public class UserUtils {
 	}
 
 	public static User fromResponseString(String response) {
-		String[] pairs = response.split("\n");
+		String[] pairs = response.split("&");
 		HashMap<String, String> form = new HashMap<>();
 		for (String pair : pairs) {
 			String[] kv = pair.split("=");

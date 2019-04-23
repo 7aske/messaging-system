@@ -3,6 +3,7 @@ package server;
 import http.StatusCodes;
 import http.Request;
 import http.Response;
+import server.database.DBController;
 import server.handler.Handler;
 import server.user.User;
 
@@ -11,12 +12,29 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Server implements AutoCloseable {
+
 	public static final int DEFAULT_SMTP_PORT = 25;
 	static private final int THREAD_TIMEOUT = 1000;
 	private int port;
 	private ServerSocket serverSocket;
 	private volatile boolean running;
 	private Thread workerThread;
+
+	public static void main(String[] args) {
+		User u0 = new User("7aske", "password123", "ntasic@gmail.com", "Nikola", "Tasic", "0038100554433", "Metropoliten");
+		DBController.initDatabase();
+		DBController.addUser(u0);
+		User u1 = DBController.getUser("7aske");
+		assert u1 != null;
+		System.out.println(u1.getPassword());
+		System.out.println(u1.checkPassword("password123"));
+		try {
+			Server.start(8000);
+		} catch (
+				IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	private Server(ServerSocket socket) {
 		this.serverSocket = socket;
@@ -39,6 +57,7 @@ public class Server implements AutoCloseable {
 			}
 		}
 	}
+
 	public int getPort() {
 		return port;
 	}
@@ -74,11 +93,12 @@ class HandlerThread implements Runnable {
 
 			if (request.getPath().equals("/register")) {
 				Handler.handleRegister(request, writer);
-			} else if (request.getPath().equals("/login")){
+			} else if (request.getPath().equals("/login")) {
 				Handler.handleLogin(request, writer);
-			} else if (request.getPath().startsWith("/api")) {
+			} else if (request.getPath().startsWith("/api/")) {
 				Handler.handleApi(request, writer);
-			} else if (request.getPath().equals("/message")){
+			} else if (request.getPath().equals("/message")) {
+
 			} else {
 				Response response = Response.generateResponse(StatusCodes.NotFound);
 				response.setBody("( ͡° ʖ̯ ͡°) 404 Not Found");

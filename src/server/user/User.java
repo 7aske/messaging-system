@@ -2,9 +2,8 @@ package server.user;
 
 import http.Response;
 import server.message.Message;
+import utils.Encryption;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +20,6 @@ public class User {
 	private String company;
 	private List<String> classes;
 	public  static final String[] fieldList = {"username", "password", "firstName", "lastName", "email", "phone", "company"};
-	private final static byte[] HASH_SALT = "1106e5f6ead07f89f65a4060724ed88d124f17b8".getBytes();
 
 	private List<Message> pendingMessages = new ArrayList<>();
 
@@ -42,7 +40,7 @@ public class User {
 	public User(String username, String password, String email, String firstName, String lastName, String phone, String company) {
 		this.id = 0;
 		this.username = username;
-		this.password = User.getSHA1Hash(password, User.HASH_SALT);
+		this.password = Encryption.getSHA1Hash(password);
 		this.email = email;
 		this.firstName = firstName;
 		this.lastName = lastName;
@@ -73,7 +71,7 @@ public class User {
 					user.company = kv.getValue();
 					break;
 				case "password":
-					user.password = User.getSHA1Hash(kv.getValue(), User.HASH_SALT);
+					user.password = Encryption.getSHA1Hash(kv.getValue());
 					break;
 			}
 		}
@@ -161,27 +159,26 @@ public class User {
 	}
 
 	public boolean checkPassword(String passToCheck) {
-		String hash = User.getSHA1Hash(passToCheck, User.HASH_SALT);
+		String hash = Encryption.getSHA1Hash(passToCheck);
 		return hash.equals(this.password);
 	}
 
-	private static String getSHA1Hash(String passwordToHash, byte[] salt) {
-		String generatedPassword = null;
-		try {
-			MessageDigest md = MessageDigest.getInstance("SHA-1");
-			md.update(salt);
-			byte[] bytes = md.digest(passwordToHash.getBytes());
-			StringBuilder sb = new StringBuilder();
-			for (int i = 0; i < bytes.length; i++) {
-				sb.append(Integer.toString((bytes[i] & 0xff) + 0x100, 16).substring(1));
-			}
-			generatedPassword = sb.toString();
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		}
-		return generatedPassword;
-	}
 
+	public static boolean isValid(User user) {
+		if (user.getUsername() == null)
+			return false;
+		if (user.getFirstName() == null)
+			return false;
+		if (user.getLastName() == null)
+			return false;
+		if (user.getEmail() == null)
+			return false;
+		if (user.getPassword() == null)
+			return false;
+		if (user.getPhone() == null)
+			return false;
+		return user.getCompany() != null;
+	}
 	@Override
 	public String toString() {
 		return "User{" +
@@ -196,12 +193,12 @@ public class User {
 	}
 
 	public String asResponseString() {
-		return "username=" + username + "\n" +
-				"password=" + password + "\n" +
-				"email=" + email + "\n" +
-				"firstName=" + firstName + "\n" +
-				"lastName=" + lastName + "\n" +
-				"phone=" + phone + "\n" +
+		return "username=" + username + "&" +
+				"password=" + password + "&" +
+				"email=" + email + "&" +
+				"firstName=" + firstName + "&" +
+				"lastName=" + lastName + "&" +
+				"phone=" + phone + "&" +
 				"company=" + company + Response.CLRF;
 	}
 

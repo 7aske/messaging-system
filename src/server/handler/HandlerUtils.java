@@ -10,8 +10,8 @@ public class HandlerUtils {
 
 	public static String getToken(Request request) {
 		String token = "";
-		if (request.containsHeader("Auth")) {
-			token = request.getHeader("Auth").getValue();
+		if (request.containsHeader("Token")) {
+			token = request.getHeader("Token").getValue();
 		} else if (request.containsHeader("Cookie")) {
 			String[] cookie = request.getHeader("Cookie").getValue().split("=");
 			if (cookie.length == 2) {
