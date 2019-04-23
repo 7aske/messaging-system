@@ -4,6 +4,7 @@ import server.database.DBController;
 import utils.Encryption;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.HashMap;
 
 public class UserUtils {
@@ -27,6 +28,13 @@ public class UserUtils {
 	}
 
 	public static boolean validateToken(User user, String token) {
+		return validateToken(user.getUsername(), token);
+	}
+
+	public static boolean validateToken(String user, String token) {
+		if (DBController.getUser(user) == null) {
+			return false;
+		}
 		long unixTime = Instant.now().getEpochSecond();
 		String dToken = Encryption.decrypt(token);
 		if (dToken != null) {
@@ -35,15 +43,16 @@ public class UserUtils {
 				String[] parts = f.split("=");
 				switch (parts[0]) {
 					case "expiresAt":
-						if (Integer.parseInt(parts[1]) - unixTime >= 0)
+						if (Integer.parseInt(parts[1]) - unixTime <= 0) {
 							return false;
+						}
 						break;
 					case "issuer":
 						if (!parts[1].equals("server"))
 							return false;
 						break;
 					case "user":
-						if (!user.getUsername().equals(parts[1]))
+						if (!user.equals(parts[1]))
 							return false;
 						break;
 					default:
@@ -54,5 +63,17 @@ public class UserUtils {
 		} else {
 			return false;
 		}
+	}
+
+	public static User fromResponseString(String response) {
+		String[] pairs = response.split("\n");
+		HashMap<String, String> form = new HashMap<>();
+		for (String pair : pairs) {
+			String[] kv = pair.split("=");
+			if (kv.length == 2) {
+				form.put(kv[0], kv[1]);
+			}
+		}
+		return User.fromForm(form);
 	}
 }

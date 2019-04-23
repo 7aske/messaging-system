@@ -1,5 +1,7 @@
 package http;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,6 +20,9 @@ public class Response {
 		this.reasonPhrase = HttpStatus.getStatusText(code);
 		this.version = HTTP_VER;
 	}
+	private Response() {
+		this.headers = new HashMap<>();
+	}
 
 	public static Response generateResponse(StatusCodes code) {
 		Response response = new Response(code);
@@ -29,6 +34,42 @@ public class Response {
 		Response response = new Response(code);
 		response.headers = new HashMap<>();
 		response.setBody(body);
+		return response;
+	}
+	
+	public static Response generateResponse(BufferedReader reader) throws IOException {
+		Response response = new Response();
+		String line;
+		while ((line = reader.readLine()) != null) {
+			if (line.isEmpty()) {
+				StringBuilder buffer = new StringBuilder();
+				Map.Entry<String, String> cl = response.getHeader("Content-length");
+				if (cl != null) {
+					int length = Integer.parseInt(cl.getValue());
+					while (length > 0) {
+						buffer.append((char) (reader.read()));
+						length--;
+					}
+					response.body = buffer.toString();
+				}
+				break;
+			} else {
+				String[] parts = line.split(": ");
+				if (parts.length == 2) {
+					response.headers.put(parts[0].toLowerCase(), parts[1]);
+				} else {
+					System.out.println(line);
+					String[] requestLine = line.split(" ", 3);
+					System.out.println(requestLine.length);
+					if (requestLine.length == 3) {
+						response.version = requestLine[0];
+						response.setStatusCode(Integer.parseInt(requestLine[1]));
+						response.reasonPhrase = requestLine[2];
+					}
+
+				}
+			}
+		}
 		return response;
 	}
 
@@ -82,6 +123,10 @@ public class Response {
 		this.body = body;
 	}
 
+	public void setBody(StringBuilder body) {
+		this.setBody(body.toString());
+	}
+
 	public byte[] getBytes() {
 		return this.toString().getBytes();
 	}
@@ -93,7 +138,7 @@ public class Response {
 			headersString.append(String.format("%s: %s\r\n", h.getKey(), h.getValue()));
 		}
 		return
-				this.version + " " + this.statusCode + " " + this.reasonPhrase + " " + Response.CLRF
+				this.version + " " + this.statusCode + " " + this.reasonPhrase  + Response.CLRF
 						+ headersString.toString()
 						+ Response.CLRF
 						+ (this.body == null ? "" : this.body);

@@ -3,6 +3,9 @@ package server.database;
 import server.user.User;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DBController {
 
@@ -35,9 +38,9 @@ public class DBController {
 			statement.setString(1, query);
 			ResultSet rs = statement.executeQuery();
 			if (rs.next()) {
-//				for (int i = 1; i <= 8; i++) {
-//					System.out.printf("%s %s\n", rs.getMetaData().getColumnLabel(i), rs.getString(i));
-//				}
+				// for (int i = 1; i <= 8; i++) {
+				// 	System.out.printf("%s %s\n", rs.getMetaData().getColumnLabel(i), rs.getString(i));
+				// }
 				int id = rs.getInt(1);
 				String username = rs.getString(2);
 				String password = rs.getString(3);
@@ -81,5 +84,40 @@ public class DBController {
 
 			}
 		}
+	}
+
+	public static ArrayList<User> getUsers(HashMap<String, String> query) {
+		ArrayList<User> out = new ArrayList<>();
+
+		StringBuilder sql = new StringBuilder("SELECT * FROM users");
+		if (query != null) {
+			sql.append(" WHERE ");
+			for (Map.Entry<String, String> kv : query.entrySet()) {
+				if (sql.length() > 26) {
+					sql.append(" AND ");
+				}
+				sql.append(String.format("%s = '%s'", kv.getKey(), kv.getValue()));
+			}
+		}
+
+		try(Connection conn = DriverManager.getConnection(DBController.DB_URL);
+		Statement statement = conn.createStatement()) {
+			ResultSet rs = statement.executeQuery(sql.toString());
+			while (rs.next()) {
+				int id = rs.getInt(1);
+				String username = rs.getString(2);
+				String password = rs.getString(3);
+				String email = rs.getString(4);
+				String firstName = rs.getString(5);
+				String lastName = rs.getString(6);
+				String phone = rs.getString(7);
+				String company = rs.getString(8);
+				out.add(new User(id, username, password, email, firstName, lastName, phone, company));
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return out;
 	}
 }

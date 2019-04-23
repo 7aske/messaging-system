@@ -28,12 +28,15 @@ public class Encryption {
 	}
 
 	public static String decrypt(String encrypted) {
+		if (Encryption.aesKey == null) {
+			Encryption.aesKey = new SecretKeySpec(key.getBytes(), "AES");
+		}
 		try {
 			Cipher cipher;
 			cipher = Cipher.getInstance("AES");
 			cipher.init(Cipher.DECRYPT_MODE, aesKey);
-			byte[] decrypted = cipher.doFinal(encrypted.getBytes());
-			return new String(Base64.getDecoder().decode(decrypted));
+			byte[] decrypted = cipher.doFinal(Base64.getDecoder().decode(encrypted));
+			return new String(decrypted);
 		} catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException | IllegalBlockSizeException | BadPaddingException e) {
 			e.printStackTrace();
 			return null;

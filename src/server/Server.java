@@ -67,21 +67,22 @@ class HandlerThread implements Runnable {
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			DataOutputStream writer = new DataOutputStream(socket.getOutputStream());
-
 			Request request = Request.generateRequest(reader);
+
 			System.out.println(request.toString());
-			switch (request.getPath()) {
-				case "/register":
-					Handler.handleRegister(request, writer);
-					break;
-				case "/login":
-					Handler.handleLogin(request, writer);
-					break;
-				default:
-					Response response = Response.generateResponse(StatusCodes.NotFound);
-					response.setBody("( ͡° ʖ̯ ͡°) 404 Not Found");
-					writer.writeBytes(response.toString());
+
+			if (request.getPath().equals("/register")) {
+				Handler.handleRegister(request, writer);
+			} else if (request.getPath().equals("/login")){
+				Handler.handleLogin(request, writer);
+			} else if (request.getPath().startsWith("/api")) {
+				Handler.handleApi(request, writer);
+			} else {
+				Response response = Response.generateResponse(StatusCodes.NotFound);
+				response.setBody("( ͡° ʖ̯ ͡°) 404 Not Found");
+				writer.writeBytes(response.toString());
 			}
+
 			reader.close();
 			writer.flush();
 			writer.close();

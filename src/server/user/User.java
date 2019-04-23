@@ -1,5 +1,6 @@
 package server.user;
 
+import http.Response;
 import server.message.Message;
 
 import java.security.MessageDigest;
@@ -79,9 +80,9 @@ public class User {
 		return user;
 	}
 
-	public static boolean isFormValid(HashMap<String, String> form){
-		for (String f:User.fieldList){
-			if (!form.containsKey(f)){
+	public static boolean isFormValid(HashMap<String, String> form) {
+		for (String f : User.fieldList) {
+			if (!form.containsKey(f)) {
 				return false;
 			}
 		}
@@ -202,4 +203,16 @@ public class User {
 				", company='" + company + '\'' +
 				'}';
 	}
+
+	public String asResponseString() {
+		return "username=" + username + "\n" +
+				"password=" + password + "\n" +
+				"email=" + email + "\n" +
+				"firstName=" + firstName + "\n" +
+				"lastName=" + lastName + "\n" +
+				"phone=" + phone + "\n" +
+				"company=" + company + Response.CLRF;
+	}
+
+
 }

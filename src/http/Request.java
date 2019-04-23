@@ -1,7 +1,11 @@
 package http;
 
 import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,6 +21,7 @@ public class Request {
 	private Request() {
 		this.headers = new HashMap<>();
 	}
+
 
 	public static Request generateRequest(BufferedReader reader) throws IOException {
 		Request request = new Request();
@@ -39,7 +44,7 @@ public class Request {
 				if (parts.length == 2) {
 					request.headers.put(parts[0].toLowerCase(), parts[1]);
 				} else {
-					String[] requestLine = line.split(" ", -1);
+					String[] requestLine = line.split(" ");
 					if (requestLine.length == 3) {
 						request.method = requestLine[0];
 						request.path = requestLine[1];
@@ -52,9 +57,18 @@ public class Request {
 		return request;
 	}
 
+	public static Request generateRequest(String method, String path) {
+		Request request = new Request();
+		request.version = Request.HTTP_VER;
+		request.path = path;
+		request.method = method;
+		return request;
+	}
 	public static Request generateRequest() {
 		Request request = new Request();
 		request.version = Request.HTTP_VER;
+		request.path = "/";
+		request.method = "GET";
 		return request;
 	}
 
@@ -70,6 +84,17 @@ public class Request {
 		return version;
 	}
 
+	public void setMethod(String method) {
+		this.method = method;
+	}
+
+	public void setPath(String path) {
+		this.path = path;
+	}
+
+	public void setVersion(String version) {
+		this.version = version;
+	}
 
 	public HashMap<String, String> getHeaders() {
 		return headers;
@@ -79,14 +104,31 @@ public class Request {
 		return body;
 	}
 
+	public void setBody(String body) {
+		this.setHeader("Content-Length", String.valueOf(body.length()));
+		this.body = body;
+	}
+
+	public void setHeader(String key, String value) {
+		this.headers.put(key, value);
+	}
 
 	public Map.Entry<String, String> getHeader(String header) {
 		for (Map.Entry<String, String> h : this.headers.entrySet()) {
-			if (h.getKey().toUpperCase().equals(header.toUpperCase())) {
+			if (h.getKey().compareToIgnoreCase(header) == 0) {
 				return h;
 			}
 		}
 		return null;
+	}
+
+	public boolean containsHeader(String header){
+		for (Map.Entry<String, String> h : this.headers.entrySet()) {
+			if (h.getKey().compareToIgnoreCase(header) == 0) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public HashMap<String, String> getFormData() {
@@ -106,6 +148,27 @@ public class Request {
 		return form;
 	}
 
+	public void setFormData(HashMap<String, String> form) {
+		StringBuilder formBody = new StringBuilder();
+		for (Map.Entry<String, String> e : form.entrySet()) {
+			if (formBody.length() != 0) {
+				formBody.append("&");
+			}
+			formBody.append(String.format("%s=%s", e.getKey(), e.getValue()));
+		}
+		this.body = formBody.toString();
+		this.setHeader("Content-Length", Integer.toString(formBody.length()));
+		this.setHeader("Content-Type", "application/x-www-form-urlencoded");
+	}
+	public Response send(String hostname, int port) throws IOException {
+			InetAddress addr = InetAddress.getByName(hostname);
+			Socket socket = new Socket(addr, port);
+			DataOutputStream writer = new DataOutputStream(socket.getOutputStream());
+			BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			writer.writeBytes(this.toString());
+			return Response.generateResponse(reader);
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder headersString = new StringBuilder();
@@ -113,7 +176,7 @@ public class Request {
 			headersString.append(String.format("%s: %s\r\n", h.getKey(), h.getValue()));
 		}
 		return
-				this.method + " " + this.path + " " + this.version + " " + Request.CLRF
+				this.method + " " + this.path + " " + this.version  + Request.CLRF
 						+ headersString.toString()
 						+ Request.CLRF
 						+ (this.body == null ? "" : this.body);
