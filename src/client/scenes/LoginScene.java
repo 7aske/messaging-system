@@ -1,6 +1,7 @@
 package client.scenes;
 
 
+import client.Client;
 import com.sun.org.apache.bcel.internal.generic.LADD;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -33,6 +34,7 @@ public class LoginScene extends Scene {
 	public Button btnLogin;
 	public Label lblRegister;
 	public Button btnRegister;
+
 
 	public LoginScene(Parent root) {
 		super(root);
@@ -76,6 +78,9 @@ public class LoginScene extends Scene {
 		this.tfPort.setMinWidth(100);
 		this.tfAddress.setText("127.0.0.1");
 		this.tfPort.setText("8000");
+
+		Client.state.setServer(this.tfAddress.getText());
+		Client.state.setPort(Integer.parseInt(this.tfPort.getText()));
 
 		this.serverPicker.getChildren().addAll(lblAddress, tfAddress, lblPort, tfPort);
 

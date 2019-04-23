@@ -1,19 +1,17 @@
 package client.components;
 
 import client.Client;
+import http.Request;
+import http.Response;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.CornerRadii;
+import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
+import server.message.Message;
 import server.user.User;
 
+import java.io.IOException;
+import java.time.Instant;
 import java.util.ArrayList;
 
 public class ComposeComponent extends VBox {
@@ -68,6 +66,25 @@ public class ComposeComponent extends VBox {
 			this.tfTo.setText("");
 			this.tfSubject.setText("");
 			this.taMessage.setText("");
+		});
+		this.btnSend.setOnMouseClicked(e -> {
+			Message msg = new Message(this.tfTo.getText(), Client.state.getUsername(), this.taMessage.getText(), Instant.now().getEpochSecond());
+			Request request = Request.generateRequest("POST", "/messages");
+			request.setHeader("User", Client.state.getUsername());
+			request.setHeader("Token", Client.state.getToken());
+			request.setHeader("Content-Type", "application/x-www-form-urlencoded");
+			request.setBody(msg.asRequestString());
+			try {
+				Response resp = request.send(Client.state.getServer(), Client.state.getPort());
+				System.out.println(resp.toString());
+				if (resp.getStatusCode() == 201) {
+					Client.showMessage("Success", "Sending success", "Successfully sent message to " + this.tfTo.getText(), Alert.AlertType.CONFIRMATION);
+				} else {
+					Client.showMessage("Error", "Message error", "Invalid message or recipient", Alert.AlertType.ERROR);
+				}
+			} catch (IOException ex) {
+				Client.showMessage("Error", "Connection error", "Error connecting to server", Alert.AlertType.ERROR);
+			}
 		});
 
 		this.getChildren().addAll(this.lblTo, this.tfTo, this.lblSubject, this.tfSubject, this.lblMessage, this.taMessage, this.btnSend, this.btnReset);

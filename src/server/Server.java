@@ -5,11 +5,14 @@ import http.Request;
 import http.Response;
 import server.database.DBController;
 import server.handler.Handler;
+import server.message.Message;
 import server.user.User;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.time.Instant;
+import java.util.ArrayList;
 
 public class Server implements AutoCloseable {
 
@@ -22,12 +25,15 @@ public class Server implements AutoCloseable {
 
 	public static void main(String[] args) {
 		User u0 = new User("7aske", "password123", "ntasic@gmail.com", "Nikola", "Tasic", "0038100554433", "Metropoliten");
+		Message m0 = new Message("7aske", "taske", "HELLO WORLDS", Instant.now().getEpochSecond());
 		DBController.initDatabase();
-		DBController.addUser(u0);
-		User u1 = DBController.getUser("7aske");
-		assert u1 != null;
-		System.out.println(u1.getPassword());
-		System.out.println(u1.checkPassword("password123"));
+		// DBController.addUser(u0);
+		// User u1 = DBController.getUser("7aske");
+		// DBController.addMessage(m0);
+		// ArrayList<Message> result = DBController.getMessagesFrom("7aske");
+		// DBController.getMessagesFrom("taske");
+		// DBController.getMessagesFrom("7aske");
+		// System.out.println(result);
 		try {
 			Server.start(8000);
 		} catch (
@@ -97,11 +103,11 @@ class HandlerThread implements Runnable {
 				Handler.handleLogin(request, writer);
 			} else if (request.getPath().startsWith("/api/")) {
 				Handler.handleApi(request, writer);
-			} else if (request.getPath().equals("/message")) {
-
+			} else if (request.getPath().equals("/messages")) {
+				Handler.handleMessage(request, writer);
 			} else {
 				Response response = Response.generateResponse(StatusCodes.NotFound);
-				response.setBody("( ͡° ʖ̯ ͡°) 404 Not Found");
+				response.setBody("404 Not Found");
 				writer.writeBytes(response.toString());
 			}
 

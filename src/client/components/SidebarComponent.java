@@ -14,19 +14,18 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
 import server.user.User;
-import server.user.UserUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
 
-public class Sidebar extends FlowPane {
-	public UsersSidebar usersSidebar;
+public class SidebarComponent extends FlowPane {
+	public UsersView usersView;
 	public TextField search;
 
-	public Sidebar() {
-		this.usersSidebar = new UsersSidebar(FXCollections.observableArrayList(Client.state.getContacts()));
-		this.usersSidebar.setMinHeight(Client.state.getHeight() - 30);
+	public SidebarComponent() {
+		this.usersView = new UsersView(FXCollections.observableArrayList(Client.state.getContacts()));
+		this.usersView.setMinHeight(Client.state.getHeight() - 30);
 
 
 		this.search = new TextField();
@@ -35,7 +34,7 @@ public class Sidebar extends FlowPane {
 		this.search.setMinHeight(30);
 		this.search.setOnKeyReleased(e -> {
 			try {
-				this.usersSidebar.updateSidebar(this.search.getText());
+				this.usersView.updateComponent(this.search.getText());
 			} catch (IOException ex) {
 				ex.printStackTrace();
 			}
@@ -44,30 +43,31 @@ public class Sidebar extends FlowPane {
 		this.setMaxWidth(250);
 
 
-		this.getChildren().addAll(search, usersSidebar);
+		this.getChildren().addAll(search, usersView);
 	}
 
-	public void updateSidebar(String query) {
+	public void updateComponent(String query) {
 		try {
-			this.usersSidebar.updateSidebar(query);
-		} catch (IOException e) {
-			e.printStackTrace();
+			this.usersView.updateComponent(query);
+		} catch (IOException ex) {
+			if (ex.getLocalizedMessage().equals("Connection refused (Connection refused)")) {
+				Client.showMessage("Error", "Connection error", "Unable to connect to the server", Alert.AlertType.ERROR);
+			} else {
+				ex.printStackTrace();
+			}
 		}
 	}
 
 	public void onClick(EventHandler<MouseEvent> fn) {
-		this.usersSidebar.setOnMouseClicked(fn);
+		this.usersView.setOnMouseClicked(fn);
 	}
 
 	public User getSelectedItem() {
-		return (User) this.usersSidebar.getSelectionModel().getSelectedItem();
+		return (User) this.usersView.getSelectionModel().getSelectedItem();
 	}
 
-	static class UsersSidebar extends ListView {
-		public UsersSidebar() {
-		}
-
-		public UsersSidebar(ObservableList<User> items) {
+	static class UsersView extends ListView {
+		public UsersView(ObservableList<User> items) {
 			super(items);
 			this.setCellFactory(param -> new ListCell<User>() {
 				@Override
@@ -82,13 +82,17 @@ public class Sidebar extends FlowPane {
 				}
 			});
 			try {
-				this.updateSidebar(null);
-			} catch (IOException e) {
-				e.printStackTrace();
+				this.updateComponent(null);
+			} catch (IOException ex) {
+				if (ex.getLocalizedMessage().equals("Connection refused (Connection refused)")) {
+					Client.showMessage("Error", "Connection error", "Unable to connect to the server", Alert.AlertType.ERROR);
+				} else {
+					ex.printStackTrace();
+				}
 			}
 		}
 
-		public void updateSidebar(String query) throws IOException {
+		public void updateComponent(String query) throws IOException {
 			String queryString = String.format("username=%s&firstName=%s&lastName=%s&company=%s", query, query, query, query);
 			if (query == null) {
 				queryString = "";
@@ -106,7 +110,7 @@ public class Sidebar extends FlowPane {
 				String[] userStrings = resp.getBody().split(Request.CLRF);
 
 				for (String u : userStrings) {
-					User newuser = UserUtils.fromResponseString(u);
+					User newuser = User.fromForm(u);
 					if (newuser.getUsername() != null)
 						newContacts.add(newuser);
 				}

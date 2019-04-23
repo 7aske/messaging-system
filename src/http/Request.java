@@ -135,6 +135,9 @@ public class Request {
 		HashMap<String, String> form = new HashMap<>();
 		if (this.method.toUpperCase().equals("POST")) {
 			Map.Entry<String, String> cdata = this.getHeader("Content-type");
+			if (cdata == null){
+				return form;
+			}
 			if (cdata.getValue().compareToIgnoreCase("application/x-www-form-urlencoded") == 0) {
 				String[] pairs = this.body.split("&");
 				for (String pair : pairs) {

@@ -57,6 +57,7 @@ public class Client extends Application {
 				Response response = loginRequest.send(hostname, port);
 				if (response.getStatusCode() == 202) {
 					Client.state.setToken(response.getHeader("Token").getValue());
+					Client.state.setUsername(username);
 					Client.state.setServer(hostname);
 					Client.state.setPort(port);
 					renderHome(stage);
@@ -111,6 +112,13 @@ public class Client extends Application {
 				request.setBody(body);
 				try {
 					Response resp = request.send(regScene.tfAddress.getText(), Integer.parseInt(regScene.tfPort.getText()));
+					if (resp.getStatusCode() == 201){
+						Client.state.setUsername(regScene.tfUsername.getText());
+						Client.state.setToken(resp.getHeader("Token").getValue());
+						renderHome(stage);
+					} else {
+						Client.showMessage("Error", "Invalid registration form", "Check your input", Alert.AlertType.ERROR);
+					}
 					System.out.println(resp.toString());
 				} catch (IOException ex) {
 					ex.printStackTrace();

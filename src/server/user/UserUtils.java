@@ -66,18 +66,4 @@ public class UserUtils {
 			return false;
 		return user.getCompany() != null;
 	}
-
-
-
-	public static User fromResponseString(String response) {
-		String[] pairs = response.split("&");
-		HashMap<String, String> form = new HashMap<>();
-		for (String pair : pairs) {
-			String[] kv = pair.split("=");
-			if (kv.length == 2) {
-				form.put(kv[0], kv[1]);
-			}
-		}
-		return User.fromForm(form);
-	}
 }

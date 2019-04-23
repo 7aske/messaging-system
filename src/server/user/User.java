@@ -77,6 +77,17 @@ public class User {
 		}
 		return user;
 	}
+	public static User fromForm(String response) {
+		HashMap<String, String> form = new HashMap<>();
+		String[] pairs = response.split("&");
+		for (String pair : pairs) {
+			String[] kv = pair.split("=");
+			if (kv.length == 2) {
+				form.put(kv[0], kv[1]);
+			}
+		}
+		return User.fromForm(form);
+	}
 
 	public String getUsername() {
 		return username;
