@@ -7,6 +7,7 @@ import client.components.TopControls;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.layout.*;
+import server.user.User;
 
 
 public class HomeScene extends Scene {
@@ -17,15 +18,22 @@ public class HomeScene extends Scene {
 
 	public HomeScene(Parent root, double width, double height) {
 		super(root, width, height);
-		// SIDEBAR START
-		this.left = new Sidebar();
-
-		//SIDEBAR END
-
 		//COMPOSE START
 		this.compose = new ComposeComponent();
 
 		//COMPOSE END
+
+		// SIDEBAR START
+		this.left = new Sidebar();
+		this.left.onClick(e -> {
+			User user = this.left.getSelectedItem();
+			System.out.println(user.toString());
+			this.compose.tfTo.setText(user.getUsername());
+			this.compose.tfSubject.setText("Message");
+			this.compose.taMessage.setText(String.format("Dear %s,\n", user.getFirstName()));
+		});
+
+		//SIDEBAR END
 
 		//MESSAGES START
 		this.messages = new MessagesComponent();

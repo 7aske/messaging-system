@@ -17,7 +17,7 @@ public class Handler {
 		HashMap<String, String> form = request.getFormData();
 		if (HandlerUtils.verifyRegisterForm(form) && request.getMethod().compareToIgnoreCase("POST") == 0) {
 			User user = User.fromForm(form);
-			if (User.isValid(user)){
+			if (UserUtils.isValid(user)){
 				System.out.println(user.toString());
 				DBController.addUser(user);
 

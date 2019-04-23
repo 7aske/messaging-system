@@ -53,6 +53,22 @@ public class UserUtils {
 		}
 	}
 
+	public static boolean isValid(User user) {
+		if (user.getUsername() == null)
+			return false;
+		if (user.getFirstName() == null)
+			return false;
+		if (user.getLastName() == null)
+			return false;
+		if (user.getEmail() == null)
+			return false;
+		if (user.getPhone() == null)
+			return false;
+		return user.getCompany() != null;
+	}
+
+
+
 	public static User fromResponseString(String response) {
 		String[] pairs = response.split("&");
 		HashMap<String, String> form = new HashMap<>();

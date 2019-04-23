@@ -199,7 +199,6 @@ public class RegisterScene extends Scene {
 				this.tfFirstName.getText(),
 				this.tfLastName.getText(),
 				this.tfPassword.getText(),
-				this.tfPasswordCnf.getText(),
 				this.tfPhone.getText(),
 				this.tfCompany.getText()
 		);

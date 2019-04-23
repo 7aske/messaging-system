@@ -19,7 +19,7 @@ public class User {
 	private String phone;
 	private String company;
 	private List<String> classes;
-	public  static final String[] fieldList = {"username", "password", "firstName", "lastName", "email", "phone", "company"};
+	public static final String[] fieldList = {"username", "password", "firstName", "lastName", "email", "phone", "company"};
 
 	private List<Message> pendingMessages = new ArrayList<>();
 
@@ -163,27 +163,11 @@ public class User {
 		return hash.equals(this.password);
 	}
 
-
-	public static boolean isValid(User user) {
-		if (user.getUsername() == null)
-			return false;
-		if (user.getFirstName() == null)
-			return false;
-		if (user.getLastName() == null)
-			return false;
-		if (user.getEmail() == null)
-			return false;
-		if (user.getPassword() == null)
-			return false;
-		if (user.getPhone() == null)
-			return false;
-		return user.getCompany() != null;
-	}
 	@Override
 	public String toString() {
 		return "User{" +
 				"username='" + username + '\'' +
-				", password='" + password + '\'' +
+				(password == null ? "" : ", password='" + password + '\'') +
 				", email='" + email + '\'' +
 				", firstName='" + firstName + '\'' +
 				", lastName='" + lastName + '\'' +
@@ -194,7 +178,6 @@ public class User {
 
 	public String asResponseString() {
 		return "username=" + username + "&" +
-				"password=" + password + "&" +
 				"email=" + email + "&" +
 				"firstName=" + firstName + "&" +
 				"lastName=" + lastName + "&" +
