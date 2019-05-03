@@ -10,12 +10,14 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.VBox;
 import server.message.Message;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 
 
 public class MessagesComponent extends VBox {
@@ -26,10 +28,15 @@ public class MessagesComponent extends VBox {
 		this.messageListView = new MessagesView(FXCollections.observableArrayList(Client.state.getMessages()));
 		this.taMessage = new TextArea();
 		this.taMessage.setEditable(false);
-		// this.taMessage.setDisable(true);
 		this.getChildren().addAll(this.messageListView, this.taMessage);
+		this.messageListView.setOnKeyPressed(e->{
+			if (e.getCode() == KeyCode.ESCAPE){
+				this.reset();
+			}
+		});
 	}
-	public void updateComponent(){
+
+	public void updateComponent() {
 		try {
 			this.messageListView.updateComponent(Client.state.getUsername());
 		} catch (IOException ex) {
@@ -40,7 +47,13 @@ public class MessagesComponent extends VBox {
 			}
 		}
 	}
-
+	public void  updateComponentSentFrom(String from){
+		this.messageListView.updateComponentSentFrom(from);
+	}
+	public void reset(){
+		this.messageListView.getSelectionModel().clearSelection();
+		this.taMessage.setText("");
+	}
 	public void onClick(EventHandler<MouseEvent> fn) {
 		this.messageListView.setOnMouseClicked(fn);
 	}
@@ -75,17 +88,37 @@ public class MessagesComponent extends VBox {
 			}
 		}
 
+		public void updateComponentSentFrom(String from) {
+			ArrayList<Message> newMessages = new ArrayList<>();
+			for (Message message : Client.state.getMessages()) {
+				if ((message.getSentFrom().equals(from) && message.getSentTo().equals(Client.state.getUsername())) ||
+						(message.getSentTo().equals(from) && message.getSentFrom().equals(Client.state.getUsername()))) {
+					newMessages.add(message);
+				}
+			}
+			newMessages.sort((m0, m1) -> {
+				if (m0.getDateSent() > m1.getDateSent()) {
+					return 1;
+				} else if (m0.getDateSent() < m1.getDateSent()) {
+					return -1;
+				} else {
+					return 0;
+				}
+			});
+			this.setItems(FXCollections.observableArrayList(newMessages));
+		}
+
 		public void updateComponent(String query) throws IOException {
 			String queryString = String.format("sentTo=%s", query);
 			if (query == null) {
 				return;
 			}
 			Request request = Request.generateRequest();
-			System.out.println(queryString);
 			request.setPath("/api/messages?" + queryString);
 			request.setMethod("GET");
 			request.setHeader("User", Client.state.getUsername());
 			request.setHeader("Token", Client.state.getToken());
+			System.out.println(request.toString());
 			Response resp = request.send(Client.state.getServer(), Client.state.getPort());
 			System.out.println(resp.toString());
 			if (resp.getStatusCode() == 200) {
@@ -97,6 +130,15 @@ public class MessagesComponent extends VBox {
 					if (msg.isValid())
 						newMsgs.add(msg);
 				}
+				newMsgs.sort((m0, m1) -> {
+					if (m0.getDateSent() > m1.getDateSent()) {
+						return 1;
+					} else if (m0.getDateSent() < m1.getDateSent()) {
+						return -1;
+					} else {
+						return 0;
+					}
+				});
 				Client.state.setMessages(newMsgs);
 				this.setItems(FXCollections.observableArrayList(Client.state.getMessages()));
 				System.out.println(Client.state.toString());

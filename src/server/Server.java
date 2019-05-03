@@ -5,14 +5,10 @@ import http.Request;
 import http.Response;
 import server.database.DBController;
 import server.handler.Handler;
-import server.message.Message;
-import server.user.User;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.time.Instant;
-import java.util.ArrayList;
 
 public class Server implements AutoCloseable {
 
@@ -24,16 +20,7 @@ public class Server implements AutoCloseable {
 	private Thread workerThread;
 
 	public static void main(String[] args) {
-		User u0 = new User("7aske", "password123", "ntasic@gmail.com", "Nikola", "Tasic", "0038100554433", "Metropoliten");
-		Message m0 = new Message("7aske", "taske", "HELLO WORLDS", Instant.now().getEpochSecond());
 		DBController.initDatabase();
-		// DBController.addUser(u0);
-		// User u1 = DBController.getUser("7aske");
-		// DBController.addMessage(m0);
-		// ArrayList<Message> result = DBController.getMessagesFrom("7aske");
-		// DBController.getMessagesFrom("taske");
-		// DBController.getMessagesFrom("7aske");
-		// System.out.println(result);
 		try {
 			Server.start(8000);
 		} catch (

@@ -17,20 +17,22 @@ import javafx.stage.Stage;
 
 import java.io.*;
 import java.util.HashMap;
+import java.util.Optional;
 
 public class Client extends Application {
 	public static final String DEFAULT_TITLE = "Client";
 
 	public static final State state = new State();
-
+	public static Stage stage;
 	@Override
-	public void start(Stage stage) throws Exception {
-		renderLogin(stage);
+	public void start(Stage stage) {
+		Client.stage = stage;
+		Client.renderLogin(stage);
 		stage.setTitle(Client.DEFAULT_TITLE);
 		stage.show();
 	}
 
-	public void renderLogin(Stage stage) {
+	public static void renderLogin(Stage stage) {
 		LoginScene scene = new LoginScene(new BorderPane(), Client.state.getWidth(), Client.state.getHeight());
 		scene.btnLogin.setOnMouseClicked(e -> {
 			String username = scene.tfUsername.getText();
@@ -60,7 +62,7 @@ public class Client extends Application {
 					Client.state.setUsername(username);
 					Client.state.setServer(hostname);
 					Client.state.setPort(port);
-					renderHome(stage);
+					Client.renderHome(stage);
 				} else {
 					showMessage("Invalid credentials", "Invalid credentials", "Invalid username or password", Alert.AlertType.ERROR);
 				}
@@ -89,18 +91,17 @@ public class Client extends Application {
 			}
 		});
 		scene.btnRegister.setOnMouseClicked(e -> {
-			renderRegister(stage);
+			Client.renderRegister(stage);
 		});
 		stage.setScene(scene);
 	}
 
-	public void renderHome(Stage stage) throws IOException {
+	public static void renderHome(Stage stage) {
 		HomeScene scene = new HomeScene(new BorderPane(), Client.state.getWidth(), Client.state.getHeight());
-
 		stage.setScene(scene);
 	}
 
-	public void renderRegister(Stage stage) {
+	public static void renderRegister(Stage stage) {
 		RegisterScene regScene = new RegisterScene(new BorderPane(), Client.state.getWidth(), Client.state.getHeight());
 
 		regScene.btnRegister.setOnMouseClicked(e -> {
@@ -138,12 +139,12 @@ public class Client extends Application {
 
 	}
 
-	public static void showMessage(String title, String header, String text, Alert.AlertType type) {
+	public static Optional<ButtonType> showMessage(String title, String header, String text, Alert.AlertType type) {
 		Alert alert = new Alert(type);
 		alert.setTitle(title);
 		alert.setHeaderText(header);
 		alert.setContentText(text);
 
-		alert.showAndWait();
+		return alert.showAndWait();
 	}
 }

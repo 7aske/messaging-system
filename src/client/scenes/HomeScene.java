@@ -1,13 +1,20 @@
 package client.scenes;
 
+import client.Client;
 import client.components.ComposeComponent;
 import client.components.MessagesComponent;
 import client.components.SidebarComponent;
 import client.components.TopControls;
+import javafx.collections.FXCollections;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import server.user.User;
+
+import java.util.Optional;
 
 
 public class HomeScene extends Scene {
@@ -31,10 +38,13 @@ public class HomeScene extends Scene {
 		this.left = new SidebarComponent();
 		this.left.onClick(e -> {
 			User user = this.left.getSelectedItem();
-			System.out.println(user.toString());
-			this.compose.tfTo.setText(user.getUsername());
-			this.compose.tfSubject.setText("Message");
-			this.compose.taMessage.setText(String.format("Dear %s,\n", user.getFirstName()));
+			if (user != null) {
+				this.compose.tfTo.setText(user.getUsername());
+				this.compose.tfSubject.setText("Message");
+				this.compose.taMessage.setText(String.format("Dear %s,\n", user.getFirstName()));
+				this.compose.checkUsername();
+				this.messages.updateComponentSentFrom(user.getUsername());
+			}
 		});
 
 		//SIDEBAR END
@@ -60,8 +70,21 @@ public class HomeScene extends Scene {
 			this.left.updateComponent(null);
 			this.messages.updateComponent();
 		});
+		this.top.btnLogout.setOnMouseClicked(e -> {
+			Optional<ButtonType> response = Client.showMessage("Warning", "Logout", "Do you really want to logout?", Alert.AlertType.CONFIRMATION);
+			if (response.isPresent() && response.get() == ButtonType.OK) {
+				Client.state.setToken("");
+				Client.state.setUsername("");
+				Client.renderLogin(Client.stage);
+			}
+		});
 		// TOP END
 
+		this.left.onKeyPress(e -> {
+			this.messages.updateComponent();
+			this.compose.reset();
+			this.left.clearSelection();
+		});
 		((BorderPane) this.getRoot()).setLeft(this.left);
 		((BorderPane) this.getRoot()).setCenter(this.compose);
 		((BorderPane) this.getRoot()).setTop(this.top);

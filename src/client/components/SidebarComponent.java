@@ -7,27 +7,33 @@ import http.Response;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ListCell;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.FlowPane;
+import javafx.scene.text.Font;
 import server.user.User;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 
 
 public class SidebarComponent extends FlowPane {
 	public UsersView usersView;
 	public TextField search;
+	public Label title;
 
 	public SidebarComponent() {
+		this.setAlignment(Pos.CENTER);
 		this.usersView = new UsersView(FXCollections.observableArrayList(Client.state.getContacts()));
 		this.usersView.setMinHeight(Client.state.getHeight() - 30);
 
-
+		this.title = new Label("Users");
+		title.setFont(new Font(24));
+		this.title.setPadding(new Insets(5));
 		this.search = new TextField();
 		this.search.setPromptText("Search");
 		this.search.setMinWidth(250);
@@ -39,13 +45,18 @@ public class SidebarComponent extends FlowPane {
 				ex.printStackTrace();
 			}
 		});
+
 		this.setMinWidth(250);
 		this.setMaxWidth(250);
 
-
-		this.getChildren().addAll(search, usersView);
+		this.getChildren().addAll(this.title, this.search, this.usersView);
 	}
-
+	public void onKeyPress(EventHandler<KeyEvent> fn){
+		this.usersView.setOnKeyPressed(fn);
+	}
+	public void clearSelection(){
+		this.usersView.getSelectionModel().clearSelection();
+	}
 	public void updateComponent(String query) {
 		try {
 			this.usersView.updateComponent(query);
@@ -77,7 +88,8 @@ public class SidebarComponent extends FlowPane {
 					if (empty || item == null || item.getUsername() == null) {
 						setText(null);
 					} else {
-						setText(item.getFirstName() + " " + item.getLastName());
+					// setText(item.getFirstName() + " " + item.getLastName());
+						setText(item.getUsername());
 					}
 				}
 			});
@@ -94,7 +106,7 @@ public class SidebarComponent extends FlowPane {
 
 		public void updateComponent(String query) throws IOException {
 			String queryString = String.format("username=%s&firstName=%s&lastName=%s&company=%s", query, query, query, query);
-			if (query == null) {
+			if (query == null || query.equals("")) {
 				queryString = "";
 			}
 			Request request = Request.generateRequest();
@@ -111,9 +123,12 @@ public class SidebarComponent extends FlowPane {
 
 				for (String u : userStrings) {
 					User newuser = User.fromForm(u);
-					if (newuser.getUsername() != null)
+					if (newuser.getUsername() != null && !newuser.getUsername().equals(Client.state.getUsername()))
 						newContacts.add(newuser);
 				}
+
+				newContacts.sort(Comparator.comparing(User::getUsername));
+
 				Client.state.setContacts(newContacts);
 				this.setItems(FXCollections.observableArrayList(Client.state.getContacts()));
 				System.out.println(Client.state.toString());

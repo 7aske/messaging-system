@@ -107,17 +107,24 @@ public class Handler {
 			if (requestParams.length == 2) {
 				String[] query = requestParams[1].split("=");
 				if (query.length == 2) {
-					System.out.println(Arrays.toString(query));
 					ArrayList<Message> msgs = null;
+					ArrayList<Message> msgsf = null;
 					if (query[0].equals("sentFrom")) {
 						msgs = DBController.getMessagesFrom(query[1]);
+						msgsf = DBController.getMessagesFrom(user);
 					} else if (query[0].equals("sentTo") && query[1].equals(user)) {
 						msgs = DBController.getMessagesTo(query[1]);
+						msgsf = DBController.getMessagesFrom(user);
 					}
 					if (msgs != null) {
 						StringBuilder responseBody = new StringBuilder();
 						for (Message m : msgs) {
 							responseBody.append(m.asResponseString());
+						}
+						if (msgsf != null) {
+							for (Message m : msgsf) {
+								responseBody.append(m.asResponseString());
+							}
 						}
 						Response response = Response.generateResponse(StatusCodes.OK);
 						response.setHeader("Content-Type", "application/x-www-form-urlencoded");
