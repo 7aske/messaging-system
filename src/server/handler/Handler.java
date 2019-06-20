@@ -151,7 +151,7 @@ public class Handler {
 			writer.writeBytes(resp.toString());
 			return;
 		}
-		// TODO: user header validation
+
 		String user = request.getHeader("User").getValue();
 		if (!UserUtils.validateToken(user, token)) {
 			Response resp = Response.generateResponse(StatusCodes.Unauthorized);
@@ -164,7 +164,7 @@ public class Handler {
 			System.out.println(msg.toString());
 			DBController.addMessage(msg);
 			Response resp = Response.generateResponse(StatusCodes.Created);
-			resp.setBody("Message recieved");
+			resp.setBody("Message received");
 			System.out.println(resp.toString());
 			writer.writeBytes(resp.toString());
 			return;

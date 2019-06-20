@@ -90,9 +90,7 @@ public class Client extends Application {
 
 			}
 		});
-		scene.btnRegister.setOnMouseClicked(e -> {
-			Client.renderRegister(stage);
-		});
+		scene.btnRegister.setOnMouseClicked(e -> Client.renderRegister(stage));
 		stage.setScene(scene);
 	}
 
